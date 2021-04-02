@@ -18,34 +18,46 @@ namespace TLSCHECK
 
         private bool SendReqeust(string Url, SecurityProtocolType protocolType, StringBuilder Logging)
         {
+            bool TLSDisabled = false;
+            string Detail = "";
             try
             {
                 try
                 {
                     Logging.Append("<BR><B>");
                     Logging.Append(protocolType.ToString());
-                    Logging.AppendLine("</B><BR>");
+                    Logging.Append(" : ");
                     ServicePointManager.SecurityProtocol = protocolType;
                     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(TextBox1.Text);
                     request.GetResponse();
                 }
                 catch (WebException webex)
                 {
-                    Logging.AppendLine(webex.ToString());
                     if ((webex.InnerException != null) && (webex.InnerException is System.IO.IOException))
                     {
                         if ((webex.InnerException.InnerException != null) && (webex.InnerException.InnerException is System.Net.Sockets.SocketException))
                         {
-                            return true;
+                            TLSDisabled = true;
                         }
                     }
+                    Detail = webex.ToString();
                 }
-                return false;
             }
             finally
             {
+                // OUTPUT
+                if (TLSDisabled) {
+                    Logging.Append("Disabled");
+                }
+                else
+                {
+                    Logging.Append("Enabled");
+                }
+                Logging.AppendLine("</B><BR>");
+                Logging.AppendLine(Detail);
                 Logging.AppendLine("<BR>");
             }
+            return TLSDisabled;
         }
 
 
